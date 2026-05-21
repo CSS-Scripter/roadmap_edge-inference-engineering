@@ -22,20 +22,34 @@ models_path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../model
 modelpath_mobilenet = os.path.join(models_path, "mobilenetv2-7.onnx")
 modelpath_yolo      = os.path.join(models_path, "yolov8n.onnx")
 modelpath_resnet    = os.path.join(models_path, "resnet50-v1-7.onnx")
-
-
+    
 
 
 def main():
-    # model = onnx.load(modelpath_yolo)
+    model = onnx.load(modelpath_yolo)
     # model = onnx.load(modelpath_mobilenet)
     # model = onnx.load(modelpath_resnet)
-    # print_model_metadata(model)
-    # print_model_inputs(model)
-    # print_model_outputs(model)
 
-    ort.InferenceSession(modelpath_yolo)
+    graph = model.graph
+
+    operators = set()
+
+    for node in graph.node:
+        print(f"Node name: {node.name}")
+        print(f"OP Type: {node.op_type}")
+        print(f"Inputs: {node.input}")
+        print(f"Outputs: {node.output}")
+        print(f"Attributes: {node.attribute}")
+
+        print("-" * 30)
+
+        operators.add(node.op_type)
+
+    print(f"Unique operators: \n {'\n- '.join(list(operators))}")
+
 
 
 if __name__ == "__main__":
     main()
+
+
