@@ -230,7 +230,7 @@ def main():
         shape_inference[o.name] = { "dtype": dtype, "shape": shape }
 ```
 
-With this collection of input, output and initializers, along with their types and shapes, we should be able to quite confidently say which types are used for which operators.
+With this collection of input, output and initializers, along with their types and shapes, we should be able to quite confidently say which types are used for which operators. We can then match this against the CUDA kernel documentation, to find our fallbacks.
 
 ```python
     # AGGREGATING OPERATOR INFORMATION
