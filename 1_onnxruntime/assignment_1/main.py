@@ -67,8 +67,8 @@ modelpath_resnet    = os.path.join(models_path, "resnet50-v1-7.onnx")
 
 
 def main():
-    # model = onnx.load(modelpath_yolo)
-    model = onnx.load(modelpath_mobilenet)
+    model = onnx.load(modelpath_yolo)
+    # model = onnx.load(modelpath_mobilenet)
     # model = onnx.load(modelpath_resnet)
 
     model = onnx.shape_inference.infer_shapes(model)
