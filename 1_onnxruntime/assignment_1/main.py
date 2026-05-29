@@ -51,9 +51,7 @@ def fetch_cuda_supported_ops():
 
 # =====================================
 
-from typing import Any
 import onnx
-import onnxruntime as ort
 
 import os
 
