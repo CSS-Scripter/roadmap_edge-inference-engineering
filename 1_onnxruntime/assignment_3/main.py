@@ -37,10 +37,6 @@ def main():
         model,
         sess_options=session_options,
         providers=[
-            ("TensorrtExecutionProvider", {
-                "trt_engine_cache_enable": True,
-                "trt_engine_cache_path": "./trt_cache"
-            }),
             "CUDAExecutionProvider",
             "CPUExecutionProvider"
         ]
@@ -49,12 +45,7 @@ def main():
     image = np.random.randn(*session.get_inputs()[0].shape).astype(np.float32)
 
     session.run(None, {"images": image})
-
-    start = time.perf_counter()
     session.run(None, {"images": image})
-    end = time.perf_counter()
-
-    print(f"duration: {(end-start)*1000:.2f} ms")
 
 
 if __name__ == "__main__":
