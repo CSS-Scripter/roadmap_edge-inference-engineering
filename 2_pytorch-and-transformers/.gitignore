@@ -1,5 +1,6 @@
 models/*
 data/*
+checkpoints
 
 __pycache__
 .venv
