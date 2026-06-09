@@ -9,7 +9,7 @@ from constants import block_size, batch_size, device, eval_interval, eval_iters,
 
 working_dir  = os.path.dirname(__file__)
 data_dir     = os.path.join(working_dir, "../../data")
-dataset_file = os.path.join(data_dir, "beemovie.txt")
+dataset_file = os.path.join(data_dir, "tinyshakespeare.txt")
 
 
 with open(dataset_file, 'r', encoding='utf-8') as f:
@@ -80,7 +80,7 @@ for iter in range(max_iters):
 
 # generate from the model
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
-print(decode(m.generate(context, max_new_tokens=500)[0].tolist()))
+print(decode(m.generate(context, max_new_tokens=1000)[0].tolist()))
 
 
 

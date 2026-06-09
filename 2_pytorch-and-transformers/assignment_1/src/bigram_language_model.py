@@ -28,7 +28,7 @@ class Head(nn.Module):
         v = self.value(x)
         out = wei @ v
         return out
-    
+
 
 class MultiHeadAttention(nn.Module):
     def __init__(self, num_heads, head_size):
@@ -105,9 +105,7 @@ class BigramLanguageModel(nn.Module):
     
 
     def generate(self, idx, max_new_tokens):
-        for i in range(max_new_tokens):
-            if i % 100 == 0:
-                print(f"generating ({i}/{max_new_tokens})")
+        for _ in range(max_new_tokens):
             idx_cond = idx[:, -block_size:]
             logits, loss = self(idx_cond)
             logits = logits[:, -1, :]
