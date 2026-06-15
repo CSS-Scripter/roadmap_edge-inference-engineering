@@ -5,6 +5,70 @@ from torch.nn import functional as F
 from constants import n_embed, block_size, device, n_layer, dropout, n_head
 
 
+class MQHead(nn.Module):
+    def __init__(self, head_size):
+        super().__init__()
+        self.query = nn.Linear(n_embed, head_size, bias=False, device=device)
+        self.register_buffer('tril', torch.tril(torch.ones(block_size, block_size, device=device)))
+        self.dropout = nn.Dropout(dropout)
+    
+    def forward(self, x, k, v):
+        B,T,C = x.shape
+        q = self.query(x)
+        wei = q @ k.transpose(-2, -1) * C**-0.5
+        wei = wei.masked_fill(self.tril[:T, :T] == 0, float('-inf')) # type: ignore
+        wei = F.softmax(wei, dim=-1)
+        wei = self.dropout(wei)
+
+        out = wei @ v
+        return out
+
+
+class MultiQueryAttention(nn.Module):
+    def __init__(self, num_heads, head_size):
+        super().__init__()
+        self.key = nn.Linear(n_embed, head_size, bias=False, device=device)
+        self.value = nn.Linear(n_embed, head_size, bias=False, device=device)
+        self.heads = nn.ModuleList([MQHead(head_size) for _ in range(num_heads)])
+        self.proj = nn.Linear(n_embed, n_embed, device=device)
+        self.dropout = nn.Dropout(dropout)
+    
+    def forward(self, x):
+        k = self.key(x)
+        v = self.value(x)
+
+        out = torch.cat([h(x, k, v) for h in self.heads], dim=-1)
+        out = self.dropout(self.proj(out))
+        return out
+
+
+class GroupedQueryAttention(nn.Module):
+    def __init__(self, num_heads, group_size, head_size):
+        super().__init__()
+        self.num_groups = num_heads // group_size
+        self.keys = nn.ModuleList([nn.Linear(n_embed, head_size, bias=False, device=device) for _ in range(self.num_groups)])
+        self.values = nn.ModuleList([nn.Linear(n_embed, head_size, bias=False, device=device) for _ in range(self.num_groups)])
+        self.heads = nn.ModuleList([MQHead(head_size) for _ in range(num_heads)])
+        self.proj = nn.Linear(n_embed, n_embed, device=device)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x):
+        ks = [self.keys[i](x) for i in range(self.num_groups)]
+        vs = [self.values[i](x) for i in range(self.num_groups)]
+
+        out = torch.cat([
+            h(
+                x,
+                ks[i%self.num_groups],
+                vs[i%self.num_groups]
+            )
+            for i, h in enumerate(self.heads)
+        ], dim=-1)
+        out = self.dropout(self.proj(out))
+        return out
+
+
+
 class Head(nn.Module):
     def __init__(self, head_size):
         super().__init__()
